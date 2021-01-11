@@ -1,17 +1,23 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class controllingTurret : MonoBehaviour
 {
     private Transform target;
+
+    [Header("Attributes")]
+
     public float range = 15f;
+    public float fireRate = 1f;
+    private float fireCountdown = 0f;
+
+    [Header("Unity Setup Fields")]
 
     private string enemyTag = "Enemy";
-
     public Transform partToRotate;
+    public float turnSpeed = 10f;
 
-    public float turnSpeed = 100f; 
+    public GameObject bulletPrefab;
+    public Transform firepoint;
 
     private void Start()
     {
@@ -50,10 +56,33 @@ public class controllingTurret : MonoBehaviour
             return;
 
         //finding and locking on target
-        rotateTurret();
+        RotateTurret();
+        FireCounting();
     }
 
-    void rotateTurret()
+    void FireCounting ()
+    {
+        if(fireCountdown <= 0f)
+        {
+            Shoot();
+            fireCountdown = 1f / fireRate;
+        }
+
+        fireCountdown -= Time.deltaTime;
+    }
+
+    void Shoot ()
+    {
+        GameObject bulletGO = Instantiate(bulletPrefab, firepoint.position, firepoint.rotation);
+        Bullet bullet = bulletGO.GetComponent<Bullet>();
+
+        if(bullet != null)
+        {
+            bullet.Seek(target);
+        }
+    }
+
+    void RotateTurret()
     {
         Vector3 dir = target.position - transform.position;
         Quaternion lookRotation = Quaternion.LookRotation(dir);
